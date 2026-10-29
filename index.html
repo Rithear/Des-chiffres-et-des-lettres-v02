@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Des chiffres et des lettres</title>
+<style>
+:root{--bg:#14233f;--card:#1e3560;--ac:#ffd24a;--tx:#fff;--mut:#9fb3d9;--ok:#4cd68a;--ko:#ff6b6b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,sans-serif;min-height:100vh}
+main{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px 24px}
+.hide{display:none!important}
+h1{text-align:center;color:var(--ac);letter-spacing:2px;margin:32px 0 24px;font-size:clamp(24px,7vw,34px);line-height:1.2;text-transform:uppercase}
+h2{text-align:center;color:var(--ac)}
+h3{color:var(--ac);margin:14px 0 6px;font-size:16px}
+.btn{background:var(--card);color:var(--tx);border:0;border-radius:10px;padding:12px 16px;font-size:16px;font-weight:700;cursor:pointer}
+.btn.p{background:var(--ac);color:#14233f}.btn:disabled{opacity:.4}
+.btn.sm{padding:8px 10px;font-size:14px;white-space:nowrap}
+.mb{display:block;width:100%;margin-bottom:12px;font-size:20px;padding:18px}
+.mrow{display:flex;gap:8px;margin-bottom:12px}.mrow .mb{margin-bottom:0;flex:1}
+.info{flex:0 0 62px;border:0;border-radius:10px;background:var(--card);color:var(--ac);font-size:24px;font-weight:800;cursor:pointer}
+.row{display:flex;gap:8px;margin:10px 0}.row .btn{flex:1}
+.top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:10px}
+.tl{display:flex;gap:6px}
+.stg{text-align:center;color:var(--mut);font-size:14px;margin-bottom:8px}
+#time,#ctime{font-size:28px;font-weight:800}.low{color:var(--ko)}
+.tiles{display:flex;gap:6px;justify-content:center;margin:14px 0}
+.tile{flex:1 1 0;min-width:0;max-width:54px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:var(--ac);color:#14233f;border:0;border-radius:8px;font-size:clamp(16px,6vw,26px);font-weight:800;cursor:pointer}
+input{width:100%;padding:14px;font-size:22px;text-align:center;text-transform:uppercase;border-radius:10px;border:2px solid var(--card);background:#0e1a30;color:var(--tx)}
+#msg,#cmsg,#dmsg{text-align:center;min-height:24px;margin:8px 0;font-weight:700}.ok{color:var(--ok)}.ko{color:var(--ko)}
+.res{display:flex;justify-content:space-between;background:var(--card);padding:8px 12px;border-radius:8px;margin:4px 0}.res.ok span:last-child{color:var(--ok)}
+.big{font-size:56px;font-weight:800;text-align:center;color:var(--ac)}
+.ptot{text-align:center;font-weight:800;font-size:20px;margin:8px 0}
+.tgt{display:flex;justify-content:center;gap:8px;margin:6px 0}
+.tgt b{width:52px;height:72px;display:flex;align-items:center;justify-content:center;background:#0e1a30;border:2px solid var(--card);border-radius:10px;font-size:50px;font-weight:800;color:var(--ac)}
+.tgt b.rl{color:var(--mut)}
+.plates{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:12px 0}
+.plate{padding:14px 0;font-size:clamp(16px,5.5vw,24px);font-weight:800;background:var(--ac);color:#14233f;border:0;border-radius:10px;cursor:pointer;text-align:center}
+.plate.sel{outline:3px solid #fff}.plate.used,.plate.ph{opacity:.25}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.plate.pop{animation:pop .3s ease-out}
+.ops{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.ops .btn{font-size:26px;padding:10px 0}.ops .btn.sel{background:var(--ac);color:#14233f}
+.cl{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--card);border-radius:8px;padding:6px 8px;margin:4px 0}
+.cl .ex{font-weight:700;font-size:18px}.cl .plate{padding:8px 0;width:84px;font-size:20px}
+.dots{display:flex;gap:6px;justify-content:center}.dots i{width:10px;height:10px;border-radius:50%;background:var(--card)}.dots i.d{background:var(--ok)}.dots i.c{outline:2px solid var(--ac)}
+.rt p{line-height:1.5;color:var(--mut)}
+#vidP{position:fixed;inset:0;background:#000;z-index:50}#vid{width:100%;height:100%;object-fit:contain}
+#vskip{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);right:12px;background:rgba(0,0,0,.6)}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:60;display:flex;align-items:center;justify-content:center;padding:16px}
+#mcard{background:var(--card);border-radius:14px;padding:20px;max-width:420px;width:100%}
+#mcard h2{margin-top:0}#mb p{line-height:1.5;color:var(--mut)}
+#mbtn{display:flex;gap:8px;margin-top:12px}#mbtn .btn{flex:1;background:#0e1a30}#mbtn .btn.p{background:var(--ac)}
+</style></head><body>
+<section id="vidP" class="pg hide"><video id="vid" src="assets/generique.mp4" playsinline preload="auto"></video><button class="btn" id="vskip" data-t="skip"></button></section>
+<div id="modal" class="hide"><div id="mcard"><h2 id="mt"></h2><div id="mb"></div><div id="mbtn"></div></div></div>
+<main>
+<section id="intro" class="pg"><h1>Des chiffres et des lettres</h1><button class="btn p mb" id="start" style="margin-top:80px">▶ Jouer / Play</button></section>
+<section id="home" class="pg hide"><h1>Des chiffres et des lettres</h1>
+<div class="mrow"><button class="btn p mb" data-p="n" data-t="pN"></button><button class="info" data-info="N">?</button></div>
+<div class="mrow"><button class="btn p mb" data-p="q" data-t="pQ"></button><button class="info" data-info="Q">?</button></div>
+<button class="btn p mb" id="free" data-t="pF"></button>
+<div class="row"><button class="btn" id="rules" data-t="rules"></button><button class="btn" id="records" data-t="records"></button></div>
+<button class="btn mb" id="lang" style="margin-top:12px;font-size:16px;padding:12px"></button></section>
+<section id="freeP" class="pg hide"><h2 data-t="pF"></h2>
+<div class="mrow"><button class="btn p mb" data-m="w" data-t="mW"></button><button class="info" data-info="W">?</button></div>
+<button class="btn p mb" data-m="l" data-t="mL"></button><button class="btn p mb" data-m="c" data-t="mC"></button><button class="btn mb" data-back data-t="back"></button></section>
+<section id="rulesP" class="pg hide"><h2 data-t="rules"></h2><button class="btn mb" data-r="W" data-t="mW"></button><button class="btn mb" data-r="L" data-t="mL"></button><button class="btn mb" data-r="C" data-t="mC"></button><button class="btn mb" data-back data-t="back"></button></section>
+<section id="ruleT" class="pg hide"><h2 id="rt"></h2><div id="rtext" class="rt"></div><button class="btn mb" id="rback" data-t="back"></button></section>
+<section id="recordsP" class="pg hide"><h2 data-t="records"></h2><div id="rlist"></div><button class="btn mb" data-back data-t="back" style="margin-top:12px"></button></section>
+<section id="dictP" class="pg hide"><h2 data-t="chooseDict"></h2><button class="btn p mb" data-d="fr" data-t="dFr"></button><button class="btn p mb" data-d="en" data-t="dEn"></button><div id="dst" style="min-height:24px;text-align:center;color:var(--mut);margin-bottom:12px"></div><button class="btn mb" id="dback" data-t="back"></button></section>
+<section id="drawP" class="pg hide"><div class="stg hide"></div><div class="top"><div class="tl"><button class="btn sm" data-quit data-t="quit"></button></div><div></div><div></div></div><h2 data-t="drawT"></h2><div class="tiles" id="slots"></div><div class="row"><button class="btn p" id="vow" data-t="pickV"></button><button class="btn p" id="con" data-t="pickC"></button></div><p id="dmsg" style="color:var(--mut)" data-t="drawH"></p></section>
+<section id="gm" class="pg hide"><div class="stg hide"></div>
+<div class="top"><div class="tl"><button class="btn sm" data-quit data-t="quit"></button><button class="btn sm mute">♪ On</button></div><div id="time">2:00</div><div id="score" style="font-weight:700;text-align:right">0</div></div>
+<div class="dots" id="dots"></div><p id="len" style="text-align:center;color:var(--mut)"></p>
+<div class="tiles" id="tiles"></div><input id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" data-ph="ph"><div id="msg"></div>
+<div class="row"><button class="btn" id="del">⌫</button><button class="btn" id="shuf" data-t="shuffle"></button><button class="btn" id="skip" data-t="skipW"></button><button class="btn p" id="ok" data-t="submit"></button></div></section>
+<section id="cGame" class="pg hide"><div class="stg hide"></div>
+<div class="top"><div class="tl"><button class="btn sm" data-quit data-t="quit"></button><button class="btn sm mute">♪ On</button></div><div id="ctime">0:45</div><div></div></div>
+<div style="text-align:center;color:var(--mut)" data-t="target"></div><div class="tgt" id="tg"></div>
+<div class="plates" id="pl"></div><div class="ops" id="ops"></div><div id="cmsg"></div>
+<div class="row"><button class="btn" id="undo" data-t="undo"></button><button class="btn" id="rst" data-t="rst"></button><button class="btn p" id="cdone" data-t="done"></button></div>
+<div id="clog"></div></section>
+<section id="end" class="pg hide"><h2 id="why"></h2><div class="big" id="final"></div><div class="ptot hide" id="ptot"></div><div id="extra"></div>
+<div id="saveBox" class="hide"><p style="text-align:center" data-t="newRec"></p><div class="row"><input id="pseudo" maxlength="10" style="text-transform:none" data-ph="name"><button class="btn p" id="save" data-t="save"></button></div></div>
+<div class="row"><button class="btn p hide" id="next" data-t="next"></button><button class="btn p" id="again" data-t="again"></button><button class="btn" id="tomenu" data-t="menu"></button></div></section>
+</main>
+<script>
+const W={"5": ["about", "above", "actor", "after", "again", "along", "among", "angry", "ankle", "apple", "april", "bacon", "baker", "beach", "beard", "begin", "below", "berry", "black", "blood", "brain", "brave", "bread", "break", "brick", "broom", "brown", "brush", "build", "camel", "candy", "carry", "chair", "chess", "chest", "child", "class", "clean", "cliff", "climb", "clock", "close", "cloud", "coach", "count", "crane", "cream", "crowd", "daisy", "dance", "dirty", "dream", "dress", "drink", "eagle", "earth", "elbow", "empty", "enter", "every", "fence", "field", "flame", "floor", "flute", "fruit", "funny", "giant", "glass", "globe", "glove", "goose", "grade", "grape", "grass", "green", "guest", "happy", "heart", "heavy", "honey", "horse", "hotel", "house", "ivory", "jeans", "jelly", "jewel", "judge", "juice", "kneel", "knife", "koala", "laser", "later", "laugh", "learn", "leave", "lemon", "light", "lucky", "lunch", "mango", "maple", "march", "match", "maybe", "medal", "melon", "metal", "money", "month", "mouse", "mouth", "movie", "music", "never", "niece", "night", "novel", "nurse", "ocean", "offer", "often", "olive", "onion", "opera", "other", "otter", "paint", "panda", "pants", "paper", "party", "pasta", "peace", "peach", "pearl", "phone", "piano", "pilot", "pizza", "plane", "plant", "plate", "proud", "puppy", "purse", "queen", "quick", "quiet", "radar", "radio", "river", "robot", "rough", "round", "rugby", "ruler", "salad", "salty", "sauce", "scale", "scarf", "score", "serve", "shark", "sheep", "shelf", "shirt", "shore", "short", "shout", "silly", "since", "skirt", "sleep", "slide", "smell", "smile", "smoke", "snake", "solid", "speak", "spoon", "sport", "start", "steak", "steel", "still", "stone", "store", "storm", "story", "stove", "study", "sugar", "swamp", "sweet", "swing", "table", "taste", "teach", "thick", "think", "thumb", "tiger", "toast", "tooth", "touch", "towel", "tower", "trade", "train", "truck", "trunk", "truth", "tulip", "uncle", "under", "unity", "until", "video", "visit", "vivid", "voice", "waste", "watch", "water", "whale", "wheel", "where", "which", "while", "white", "world", "would", "wrist", "write", "young", "youth", "zebra"], "6": ["across", "almost", "always", "animal", "answer", "around", "arrive", "artist", "august", "autumn", "badger", "bakery", "bamboo", "barber", "basket", "beaver", "become", "beetle", "before", "behind", "beside", "beyond", "bitter", "bottle", "boxing", "branch", "breeze", "bridge", "bright", "bronze", "bucket", "burger", "butter", "button", "cactus", "camera", "candle", "cannot", "canyon", "carpet", "carrot", "castle", "cement", "chance", "change", "cheese", "cherry", "choose", "church", "cinema", "circle", "circus", "clever", "closed", "closet", "coffee", "cookie", "copper", "cotton", "cousin", "danger", "degree", "desert", "dinner", "doctor", "domino", "donkey", "dragon", "drawer", "driver", "during", "easter", "either", "energy", "engine", "enough", "eraser", "except", "expert", "fabric", "falcon", "family", "farmer", "finger", "finish", "flower", "forest", "forget", "friday", "fridge", "friend", "future", "galaxy", "garage", "garden", "gentle", "ginger", "golden", "guitar", "hammer", "harbor", "hockey", "honest", "hunter", "inside", "invent", "island", "jacket", "jungle", "kitten", "ladder", "lawyer", "legend", "lesson", "letter", "listen", "lizard", "marble", "market", "melody", "minute", "mirror", "modern", "moment", "monday", "monkey", "mother", "muscle", "museum", "narrow", "nature", "needle", "nephew", "noodle", "number", "office", "orange", "orchid", "oyster", "palace", "parent", "parrot", "pencil", "people", "pepper", "pigeon", "pillow", "planet", "player", "pocket", "police", "polite", "potato", "pretty", "purple", "puzzle", "rabbit", "racket", "rather", "really", "record", "repair", "rhythm", "rocket", "rubber", "sailor", "salmon", "sandal", "school", "screen", "search", "season", "second", "secret", "shadow", "shorts", "shower", "shrimp", "silver", "singer", "sister", "skiing", "smooth", "soccer", "spider", "spirit", "spring", "square", "stairs", "stream", "street", "strong", "subway", "summer", "sunday", "target", "tennis", "though", "ticket", "toilet", "tomato", "tongue", "toward", "travel", "trophy", "tunnel", "turkey", "turtle", "valley", "violin", "waiter", "wallet", "window", "winter", "within", "wizard", "wonder", "worker", "writer", "yellow", "zipper"], "7": ["against", "airport", "already", "ancient", "another", "balance", "balcony", "battery", "because", "bedroom", "believe", "between", "blanket", "brother", "builder", "butcher", "cabinet", "camping", "captain", "ceiling", "century", "chapter", "chicken", "chimney", "climate", "college", "concert", "country", "courage", "cricket", "curtain", "cycling", "dentist", "destroy", "dolphin", "evening", "explain", "eyebrow", "factory", "fashion", "finance", "freedom", "gallery", "general", "giraffe", "granite", "harvest", "history", "holiday", "husband", "imagine", "january", "journey", "justice", "kingdom", "kitchen", "lantern", "leather", "leopard", "library", "lobster", "luggage", "machine", "measure", "message", "monster", "morning", "mystery", "network", "october", "opinion", "outside", "painter", "pajamas", "penguin", "perfect", "picture", "pioneer", "plastic", "present", "problem", "profile", "protect", "quarter", "rainbow", "receive", "sausage", "science", "serious", "shelter", "soldier", "stadium", "station", "stomach", "student", "subject", "succeed", "sunrise", "sweater", "teacher", "theater", "theatre", "through", "thunder", "tonight", "traffic", "trouble", "trumpet", "tuesday", "victory", "village", "volcano", "warrior", "weather", "website", "wedding", "whether", "whisper", "without"], "8": ["absolute", "accident", "backpack", "bathroom", "birthday", "bracelet", "building", "business", "calendar", "champion", "chemical", "children", "computer", "concrete", "continue", "daylight", "december", "dinosaur", "discover", "document", "electric", "elephant", "engineer", "exercise", "favorite", "february", "festival", "football", "forecast", "forehead", "gasoline", "generous", "hardware", "hedgehog", "homework", "hospital", "internet", "keyboard", "language", "magazine", "material", "medicine", "mountain", "mushroom", "necklace", "neighbor", "notebook", "november", "painting", "password", "pavement", "platform", "pleasure", "question", "reaction", "remember", "sailboat", "sandwich", "saturday", "security", "sentence", "shoulder", "software", "squirrel", "straight", "suitcase", "sunshine", "surprise", "swimming", "thursday", "together", "tomorrow", "treasure", "umbrella", "universe", "vacation", "wardrobe", "yourself"]};
+const F={"5": ["acier", "agite", "aider", "aigle", "aimer", "ainsi", "alors", "amour", "annee", "apres", "arbre", "assez", "aussi", "avant", "avion", "avril", "bague", "balai", "balle", "barbe", "beton", "biche", "biere", "bijou", "bison", "blanc", "boeuf", "boire", "botte", "brest", "brise", "cadre", "calme", "carre", "carte", "champ", "chaud", "chene", "chiot", "cible", "cidre", "clair", "coeur", "conte", "coton", "coude", "coupe", "court", "crabe", "creme", "crepe", "crier", "cygne", "dames", "danse", "dinde", "diner", "doigt", "droit", "drole", "ecole", "ecran", "eleve", "enfin", "etang", "fache", "femme", "ferme", "filet", "fille", "finir", "fleur", "flute", "foret", "frere", "froid", "front", "fusee", "genou", "givre", "glace", "globe", "gomme", "grand", "guepe", "harpe", "herbe", "heron", "hetre", "heure", "hibou", "hiver", "hotel", "huile", "image", "jambe", "jaune", "jeudi", "jeune", "jouer", "jouet", "juste", "koala", "laine", "lampe", "lapin", "large", "laser", "laver", "lecon", "leger", "lever", "levre", "libre", "lille", "livre", "lourd", "lundi", "lycee", "mardi", "marin", "match", "melon", "metal", "metro", "mieux", "mince", "moins", "moule", "musee", "nager", "nappe", "navet", "neige", "neveu", "niece", "nuage", "olive", "oncle", "ongle", "opera", "orage", "orgue", "ouest", "outil", "paris", "passe", "payer", "peche", "peser", "petit", "photo", "piano", "pince", "pizza", "plage", "plein", "plomb", "pluie", "poche", "poele", "poeme", "poete", "poire", "pomme", "porte", "poste", "pouce", "prise", "prune", "radar", "radio", "radis", "regle", "renne", "repas", "revue", "riche", "robot", "roman", "rosee", "rouge", "route", "rugby", "sable", "salon", "sapin", "sauce", "saule", "savon", "short", "singe", "soeur", "soupe", "sport", "stade", "steak", "stylo", "sucre", "table", "tante", "tapis", "tarte", "tasse", "taupe", "temps", "tenir", "tente", "terre", "texte", "tiede", "tigre", "tissu", "train", "tronc", "utile", "vache", "verre", "veste", "video", "vieux", "ville", "vivre", "voler", "zebre"], "6": ["acteur", "agneau", "amande", "amitie", "ananas", "ancien", "argent", "argile", "avenir", "avenue", "avocat", "bagage", "balcon", "ballon", "bambou", "banane", "banque", "basket", "bateau", "beurre", "billet", "bonbon", "bonnet", "bouche", "bouton", "brebis", "brique", "bronze", "brosse", "buffle", "bureau", "cacher", "cactus", "cadeau", "cahier", "calcul", "calmar", "camion", "canape", "canard", "carafe", "carton", "casser", "castor", "celeri", "centre", "cerise", "chaise", "chance", "chaton", "chemin", "cheval", "cheveu", "chevre", "cigale", "ciment", "cinema", "cirque", "citron", "classe", "cochon", "colere", "copain", "couper", "courbe", "courir", "course", "cousin", "crayon", "croire", "cuivre", "danger", "danser", "dedans", "dehors", "demain", "depuis", "desert", "dessin", "dessus", "destin", "devant", "devoir", "dictee", "domino", "donner", "dormir", "douche", "echecs", "eclair", "ecrire", "eglise", "encore", "enfant", "entrer", "epaule", "eponge", "epoque", "equipe", "espoir", "etoile", "etroit", "europe", "examen", "facile", "faible", "faisan", "farine", "faucon", "fermer", "fleuve", "fondue", "former", "fourmi", "fraise", "france", "frites", "gagner", "garage", "garcon", "garder", "gateau", "gaufre", "gentil", "girafe", "gouter", "granit", "grotte", "guerre", "hasard", "hockey", "homard", "huitre", "humide", "invite", "jaguar", "jamais", "jambon", "jardin", "jasmin", "joueur", "jungle", "langue", "lavabo", "legume", "lettre", "lezard", "lierre", "mairie", "maison", "maitre", "manege", "manger", "mangue", "marais", "marbre", "marche", "marron", "meduse", "menthe", "mettre", "meuble", "minute", "miroir", "moment", "monter", "montre", "moteur", "mouche", "mourir", "mousse", "mouton", "muguet", "muscle", "naitre", "nantes", "navire", "nombre", "offrir", "oignon", "oiseau", "orange", "orteil", "ouvert", "ouvrir", "panier", "papier", "paques", "parent", "parler", "partir", "patron", "pauvre", "paysan", "peigne", "pensee", "penser", "perdre", "persil", "phoque", "phrase", "pierre", "pigeon", "pilote", "plante", "poivre", "porter", "poulet", "poulpe", "poumon", "poupee", "propre", "puzzle", "pyjama", "quiche", "racine", "raisin", "raison", "rapide", "record", "renard", "rennes", "requin", "rester", "reveil", "rideau", "rocher", "rythme", "saison", "salade", "samedi", "saumon", "sauter", "sauver", "savane", "savoir", "secret", "sentir", "servir", "siecle", "simple", "soldat", "soleil", "sombre", "sortir", "source", "souris", "tennis", "timide", "tiroir", "tomate", "tomber", "tortue", "trajet", "triste", "truite", "tulipe", "tunnel", "valise", "vallee", "vendre", "ventre", "verite", "viande", "violet", "violon", "visage", "voisin", "volcan", "voyage", "yaourt"], "7": ["abeille", "abricot", "acheter", "afrique", "ampoule", "appeler", "argente", "armoire", "arreter", "arriver", "artiste", "auberge", "autobus", "automne", "baleine", "basilic", "beignet", "belette", "bientot", "biscuit", "bonheur", "boucher", "bouleau", "branche", "brioche", "brochet", "buisson", "camping", "carotte", "cascade", "certain", "cerveau", "chaleur", "chambre", "chameau", "changer", "chanson", "chanter", "chapeau", "charbon", "chemise", "chiffre", "choisir", "cigogne", "clavier", "college", "collier", "colline", "commode", "compter", "concert", "content", "corbeau", "coucher", "couette", "couloir", "courage", "couteau", "crapaud", "cravate", "cuisine", "curieux", "dauphin", "defaite", "dessert", "dessous", "devenir", "diplome", "docteur", "drapeau", "echarpe", "echelle", "echouer", "ecouter", "energie", "ensuite", "envoyer", "epinard", "essayer", "essence", "estomac", "etagere", "etudier", "facteur", "falaise", "famille", "fenetre", "fermier", "feuille", "fevrier", "flamant", "fougere", "fromage", "gorille", "grandir", "grenier", "guitare", "habiter", "haricot", "heureux", "honnete", "hopital", "horloge", "insecte", "instant", "janvier", "journal", "juillet", "justice", "lavande", "lecture", "legende", "leopard", "lessive", "liberte", "lumiere", "lunette", "machine", "magasin", "maillot", "manchot", "manteau", "marcher", "mariage", "marteau", "matelas", "mechant", "medecin", "melodie", "memoire", "message", "mesurer", "moderne", "moineau", "montrer", "mouette", "musique", "mystere", "oceanie", "octobre", "oreille", "oublier", "ouvrier", "palmier", "parfois", "partout", "peindre", "peintre", "pelican", "pelouse", "peluche", "pendant", "perdrix", "petrole", "piscine", "pivoine", "placard", "plafond", "planete", "pleurer", "poignet", "poireau", "poisson", "poivron", "pompier", "portail", "poussin", "pouvoir", "prairie", "prendre", "present", "presque", "recette", "reparer", "retenir", "reussir", "riviere", "sandale", "sardine", "science", "seconde", "semaine", "sembler", "serieux", "serpent", "serrure", "serveur", "sourcil", "sourire", "souvent", "station", "surtout", "tableau", "tambour", "taureau", "tempete", "theatre", "torchon", "toucher", "tramway", "trousse", "trouver", "univers", "vendeur", "village", "visiter", "voilier", "voiture", "vouloir", "voyager"], "8": ["addition", "aeroport", "ailleurs", "amerique", "anguille", "araignee", "assiette", "attendre", "baguette", "beaucoup", "blaireau", "bordeaux", "bouillon", "boutique", "bracelet", "capitale", "cartable", "ceinture", "champion", "chanteur", "cheminee", "chercher", "cheville", "chocolat", "coiffeur", "commerce", "coquille", "courrier", "crevette", "cuillere", "cuisiner", "cyclisme", "decembre", "dejeuner", "demander", "dentiste", "derriere", "dessiner", "detester", "detruire", "dimanche", "ecrivain", "ecureuil", "elephant", "ensemble", "entendre", "escalier", "escargot", "etudiant", "fauteuil", "football", "herisson", "histoire", "imaginer", "internet", "inventer", "lentille", "limonade", "magazine", "medaille", "mensonge", "mercredi", "montagne", "moutarde", "musicien", "natation", "nettoyer", "noisette", "novembre", "omelette", "orchidee", "oreiller", "pantalon", "panthere", "paquebot", "peuplier", "pingouin", "plancher", "poitrine", "policier", "possible", "poubelle", "preparer", "proteger", "quartier", "raclette", "raconter", "raquette", "recevoir", "regarder", "repondre", "ruisseau", "sandwich", "sanglier", "saucisse", "terrasse", "toboggan", "tonnerre", "toujours", "toulouse", "vacances", "vendredi", "victoire", "vinaigre", "violette", "vraiment"]};
+const T={fr:{skip:"Passer ⏭",mW:"Les mots de la fin",mL:"Le mot le plus long",mC:"Le compte est bon",pN:"Partie normale",pQ:"Partie rapide",pF:"Jeu libre",rules:"Règles",records:"Records",back:"Retour",close:"Fermer",quit:"✕ Quitter",quitQ:"Quitter la partie en cours ? Ta progression sera perdue.",yes:"Oui",no:"Non",next:"Manche suivante ▶",total:"Total",round:"Manche {n}/{m}",partyEnd:"Partie terminée !",ended:"Manche terminée",chooseDict:"Choisis le dictionnaire",dFr:"🇫🇷 Dictionnaire français",dEn:"🇬🇧 Dictionnaire anglais",loading:"Chargement du dictionnaire…",offline:"Dictionnaire en ligne indisponible : mini-dictionnaire utilisé",ph:"Ton mot",name:"Nom",submit:"Valider",shuffle:"Mélanger",skipW:"Passer",pts:"pts",good:"Correct ! +{n}",useAll:"Utilise les {n} lettres",noMatch:"Ces lettres ne correspondent pas",notDict:"Mot absent du dictionnaire",badL:"Tu n'as pas ces lettres",timeUp:"Temps écoulé !",allFound:"Tous les mots sont trouvés !",saved:"Enregistré dans les records !",noScores:"Aucun score pour l'instant. Lance une partie !",newRec:"Nouveau record ! Entre ton nom",save:"Enregistrer",again:"Rejouer",menu:"Menu",nLetters:"{n} lettres",pickV:"Voyelle",pickC:"Consonne",drawT:"Tire 10 lettres",drawH:"Au moins 2 voyelles et 2 consonnes",longH:"Trouve le mot le plus long",yourBest:"Ton meilleur mot :",bestOf:"Meilleur mot possible :",none:"aucun",target:"Nombre à trouver",undo:"Annuler",rst:"Tout annuler",done:"Terminer",opBad:"Opération impossible",exact:"Le compte est bon !",yourClosest:"Ton meilleur résultat :",solution:"Une solution :",
+iN:`<p>Une partie complète en 13 manches : un tirage de chiffres (Le compte est bon), puis deux tirages de lettres (Le mot le plus long), et on recommence, 4 fois en tout.</p><p>La partie se termine par Les mots de la fin. Les points de toutes les manches s'additionnent.</p>`,
+iQ:`<p>Une partie courte en 5 manches : chiffres, lettres, chiffres, lettres, puis Les mots de la fin.</p><p>Les points de toutes les manches s'additionnent.</p>`,
+iW:`<p>Huit mots mélangés à retrouver : 5, 6, 7 et 8 lettres, puis encore 5, 6, 7 et 8 lettres.</p><p>Tu as 2 minutes pour toute la manche. Tu peux passer un mot et y revenir plus tard. Chaque mot juste rapporte 1 point par lettre.</p>`,
+rW:`<p>Huit mots mélangés à retrouver : 5, 6, 7 et 8 lettres, puis encore 5, 6, 7 et 8 lettres.</p><p>Tu as 2 minutes pour toute la partie. Tape ta réponse ou touche les lettres. Chaque mot juste rapporte 1 point par lettre.</p><p>Tu peux passer un mot et y revenir plus tard. Les réponses s'affichent quand la musique est terminée.</p><p>Avant la partie, choisis le dictionnaire : français ou anglais.</p>`,
+rL:`<p>Dix lettres sont tirées : à chaque tirage, tu choisis voyelle ou consonne (au moins 2 de chaque).</p><p>Tu as 30 secondes pour former le mot le plus long possible, chaque lettre une seule fois. Chaque mot valide rapporte 1 point par lettre, ton meilleur mot compte.</p><p>À la fin, le plus long mot possible du dictionnaire est révélé. Dictionnaire français ou anglais au choix.</p>`,
+rC:`<p>Six plaques sont tirées au hasard (de 1 à 10, et 25, 50, 75, 100), ainsi qu'un nombre cible entre 101 et 999.</p><p>Avec + − × ÷ (résultats entiers positifs) et chaque plaque une seule fois, atteins la cible ou approche-t'en au plus près. Touche une plaque, un opérateur, puis une seconde plaque. Chaque résultat intermédiaire s'affiche à droite de sa ligne et peut être sélectionné pour la suite.</p><p>Tu as 45 secondes : la manche va jusqu'au bout du temps et de la musique, mais tu peux toucher Terminer pour voir le résultat plus tôt. 10 points si le compte est bon, 7 points à 5 d'écart maximum, 5 points à 10 d'écart maximum.</p>`},
+en:{skip:"Skip ⏭",mW:"Final Words",mL:"Longest Word",mC:"Countdown Numbers",pN:"Full game",pQ:"Quick game",pF:"Free play",rules:"Rules",records:"Records",back:"Back",close:"Close",quit:"✕ Quit",quitQ:"Quit the current game? Your progress will be lost.",yes:"Yes",no:"No",next:"Next round ▶",total:"Total",round:"Round {n}/{m}",partyEnd:"Game over!",ended:"Round finished",chooseDict:"Choose the dictionary",dFr:"🇫🇷 French dictionary",dEn:"🇬🇧 English dictionary",loading:"Loading dictionary…",offline:"Online dictionary unavailable: mini-dictionary used",ph:"Your word",name:"Name",submit:"Submit",shuffle:"Shuffle",skipW:"Skip",pts:"pts",good:"Correct! +{n}",useAll:"Use all {n} letters",noMatch:"These letters don't match",notDict:"Word not in the dictionary",badL:"You don't have these letters",timeUp:"Time is up!",allFound:"All words found!",saved:"Saved to the records!",noScores:"No scores yet. Start a game!",newRec:"New record! Enter your name",save:"Save",again:"Play again",menu:"Menu",nLetters:"{n} letters",pickV:"Vowel",pickC:"Consonant",drawT:"Draw 10 letters",drawH:"At least 2 vowels and 2 consonants",longH:"Find the longest word",yourBest:"Your best word:",bestOf:"Best possible word:",none:"none",target:"Target number",undo:"Undo",rst:"Reset all",done:"Finish",opBad:"Impossible operation",exact:"You hit the target!",yourClosest:"Your best result:",solution:"A solution:",
+iN:`<p>A full game in 13 rounds: one numbers round (Countdown Numbers), then two letters rounds (Longest Word), and again, 4 times in all.</p><p>The game ends with Final Words. Points from all rounds add up.</p>`,
+iQ:`<p>A short game in 5 rounds: numbers, letters, numbers, letters, then Final Words.</p><p>Points from all rounds add up.</p>`,
+iW:`<p>Eight scrambled words to find: 5, 6, 7 and 8 letters, then 5, 6, 7 and 8 letters again.</p><p>You have 2 minutes for the whole round. You can skip a word and come back to it later. Each correct word scores 1 point per letter.</p>`,
+rW:`<p>Eight scrambled words to find: 5, 6, 7 and 8 letters, then 5, 6, 7 and 8 letters again.</p><p>You have 2 minutes for the whole game. Type your answer or tap the letters. Each correct word scores 1 point per letter.</p><p>You can skip a word and come back to it later. Answers appear once the music has finished.</p><p>Before the game, choose the dictionary: French or English.</p>`,
+rL:`<p>Ten letters are drawn: each time, you choose a vowel or a consonant (at least 2 of each).</p><p>You have 30 seconds to build the longest word you can, using each letter once. Each valid word scores 1 point per letter, your best word counts.</p><p>At the end, the longest possible word from the dictionary is revealed. French or English dictionary, your choice.</p>`,
+rC:`<p>Six tiles are drawn at random (1 to 10, and 25, 50, 75, 100), along with a target between 101 and 999.</p><p>Using + − × ÷ (positive whole results only) and each tile at most once, reach the target or get as close as you can. Tap a tile, an operator, then a second tile. Each intermediate result appears at the right of its line and can be selected for the next step.</p><p>You have 45 seconds: the round runs until the time and the music are over, but you can tap Finish to see the result sooner. 10 points for an exact hit, 7 points within 5, 5 points within 10.</p>`}};
+let L="fr";try{L=localStorage.getItem("fwlang")||"fr"}catch(e){}
+const $=id=>document.getElementById(id),t=(k,n,m)=>T[L][k].replace("{n}",n).replace("{m}",m),all=s=>document.querySelectorAll(s);
+const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const scr=w=>{let l;do l=sh(w.split(""));while(l.join("")===w);return l};
+const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae");
+const show=id=>all(".pg").forEach(e=>e.classList.toggle("hide",e.id!==id));
+const fmt=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const A={theme:new Audio("assets/theme.mp3"),ding:new Audio("assets/ding.mp3"),chiffres:new Audio("assets/musique-chiffres.mp3"),lettres:new Audio("assets/musique-lettres.mp3")};
+let music=null,musicOn=true,pending=null,timer,tmo,dtm,mode,dl,dict,rounds,queue,cur,score,best,locked,over=true,ld,nv,nc,rk="W",party=null,rc=null,rs=0;
+const NS=[].concat(...[0,1,2,3].map(()=>["c","l","l"]),["w"]),QS=["c","l","c","l","w"];
+function playM(a){stopM();music=a;a.currentTime=0;if(musicOn)a.play().catch(()=>{})}
+function stopM(){if(music){music.pause();music.onended=null}}
+function ding(){if(musicOn){A.ding.currentTime=0;A.ding.play().catch(()=>{})}}
+function afterMusic(fn){clearTimeout(tmo);const a=music;let d=0;const go=()=>{if(d)return;d=1;clearTimeout(tmo);pending=null;fn()};
+ if(musicOn&&a&&!a.paused&&!a.ended){pending=go;a.onended=go;tmo=setTimeout(go,isFinite(a.duration)?(a.duration-a.currentTime)*1000+1500:9000)}else go()}
+function runTimer(sec,el,onEnd){clearInterval(timer);let left=sec;const f=()=>{el.textContent=fmt(left);el.classList.toggle("low",left<=10);if(left<=0){clearInterval(timer);onEnd();return}left--};f();timer=setInterval(f,1000)}
+function msg(s,c,id){const e=$(id||"msg");e.textContent=s;e.className=c||""}
+all(".mute").forEach(b=>b.onclick=()=>{musicOn=!musicOn;all(".mute").forEach(x=>x.textContent=musicOn?"♪ On":"♪ Off");if(musicOn){music&&music.play().catch(()=>{})}else{music&&music.pause();pending&&pending()}});
+// modale
+function modal(title,html,btns){$("mt").textContent=title;$("mb").innerHTML=html;const b=$("mbtn");b.innerHTML="";btns.forEach(x=>{const e=document.createElement("button");e.className="btn "+(x.c||"");e.textContent=x.l;e.onclick=x.f;b.appendChild(e)});$("modal").classList.remove("hide")}
+const closeModal=()=>$("modal").classList.add("hide");
+$("modal").onclick=e=>{if(e.target.id==="modal")closeModal()};
+const IT={N:"pN",Q:"pQ",W:"mW"};
+all("[data-info]").forEach(b=>b.onclick=()=>{const k=b.dataset.info;modal(t(IT[k]),t("i"+k),[{l:t("close"),c:"p",f:closeModal}])});
+// manche en cours
+function setStage(){const s=party?t("round",party.i+1,party.steps.length)+" · "+t("m"+party.steps[party.i].toUpperCase())+" · "+t("total")+" "+party.total+" "+t("pts"):"";all(".stg").forEach(e=>{e.textContent=s;e.classList.toggle("hide",!s)})}
+// langue
+function applyLang(){document.documentElement.lang=L;all("[data-t]").forEach(e=>e.textContent=t(e.dataset.t));all("[data-ph]").forEach(e=>e.placeholder=t(e.dataset.ph));$("lang").textContent=L==="fr"?"🇬🇧 English":"🇫🇷 Français";
+ if(!$("ruleT").classList.contains("hide"))showRule(rk);if(!$("recordsP").classList.contains("hide"))renderR();setStage()}
+$("lang").onclick=()=>{L=L==="fr"?"en":"fr";try{localStorage.setItem("fwlang",L)}catch(e){}applyLang()};
+// intro
+function toHome(){$("vid").pause();show("home")}
+$("start").onclick=()=>{Object.values(A).forEach(a=>{a.muted=true;a.play().then(()=>{a.pause();a.currentTime=0;a.muted=false}).catch(()=>{a.muted=false})});show("vidP");$("vid").play().catch(toHome)};
+$("vid").onended=toHome;$("vid").onerror=toHome;$("vskip").onclick=toHome;
+// navigation
+all("[data-back]").forEach(b=>b.onclick=()=>show("home"));
+$("dback").onclick=()=>show(party?"home":"freeP");
+$("free").onclick=()=>show("freeP");
+$("rules").onclick=()=>show("rulesP");$("records").onclick=()=>{renderR();show("recordsP")};
+function showRule(k){rk=k;$("rt").textContent=t("m"+k);$("rtext").innerHTML=t("r"+k);show("ruleT")}
+all("[data-r]").forEach(b=>b.onclick=()=>showRule(b.dataset.r));$("rback").onclick=()=>show("rulesP");
+all("[data-p]").forEach(b=>b.onclick=()=>{const ty=b.dataset.p;party={type:ty,steps:ty==="n"?NS:QS,i:0,total:0};$("dst").textContent="";show("dictP")});
+all("[data-m]").forEach(b=>b.onclick=()=>{party=null;mode=b.dataset.m;if(mode==="c")startC();else{$("dst").textContent="";show("dictP")}});
+all("[data-d]").forEach(b=>b.onclick=()=>goDict(b.dataset.d));
+function quitGame(){ctok++;clearTimeout(tmo);clearTimeout(dtm);clearInterval(timer);pending=null;stopM();over=true;party=null;closeModal();setStage();show("home")}
+all("[data-quit]").forEach(b=>b.onclick=()=>party?modal(t("quit"),"<p>"+t("quitQ")+"</p>",[{l:t("no"),f:closeModal},{l:t("yes"),c:"p",f:quitGame}]):quitGame());
+$("tomenu").onclick=quitGame;
+function runStep(){mode=party.steps[party.i];mode==="c"?startC():mode==="l"?startL():startW()}
+const replay=()=>{if(party){party.i=0;party.total=0;runStep()}else mode==="c"?startC():mode==="w"?startW():startL()};
+$("again").onclick=replay;$("next").onclick=()=>{party.i++;runStep()};
+// dictionnaires
+const DU={fr:"https://cdn.jsdelivr.net/npm/an-array-of-french-words@2/index.json",en:"https://cdn.jsdelivr.net/npm/an-array-of-english-words@2/index.json"};
+const ALL=new Set(Object.values(W).flat()),D={};
+async function loadDict(l){if(D[l])return D[l];let ok=true,set=new Set(l==="fr"?Object.values(F).flat():ALL);
+ try{const r=await fetch(DU[l]);if(!r.ok)throw 0;const a=await r.json();set=new Set();for(const w of a){const n=norm(w);if(/^[a-z]{2,10}$/.test(n))set.add(n)}}catch(e){ok=false}
+ const d={set,list:[...set],ok};if(ok)D[l]=d;return d}
+async function goDict(l){dl=l;$("dst").textContent=t("loading");all("[data-d]").forEach(b=>b.disabled=true);dict=await loadDict(l);all("[data-d]").forEach(b=>b.disabled=false);party?runStep():mode==="w"?startW():startL()}
+// jeu de lettres commun
+function lock(b){["ok","del","shuf","skip","ans"].forEach(id=>$(id).disabled=b);locked=b}
+const mx=()=>mode==="w"?rounds[queue[cur]].w.length:10;
+function gameUI(){lock(false);msg("");$("skip").classList.toggle("hide",mode==="l");show("gm");draw()}
+function draw(){$("dots").innerHTML=mode==="w"?rounds.map((r,i)=>'<i class="'+(r.done?"d ":"")+(i===queue[cur]?"c":"")+'"></i>').join(""):"";
+ if(mode==="w"&&!queue.length){results(t("allFound"),xW());return}
+ const r=rounds[queue[cur]];$("len").textContent=mode==="w"?t("nLetters",r.w.length):t("longH");$("ans").value="";$("ans").maxLength=mx();$("score").textContent=score+" "+t("pts");msg("");rt()}
+function rt(){const r=rounds[queue[cur]],v=$("ans").value.toLowerCase().split(""),u=[];
+ $("tiles").innerHTML=r.l.map((c,i)=>{const k=v.indexOf(c);let used=false;if(k>-1&&!u.includes(i)){v[k]="";used=true}return'<button class="tile" data-i="'+i+'"'+(used?' style="opacity:.3"':"")+">"+c.toUpperCase()+"</button>"}).join("")}
+$("tiles").onclick=e=>{const b=e.target.closest(".tile");if(!b||locked)return;const a=$("ans");if(a.value.length<mx()){a.value+=rounds[queue[cur]].l[+b.dataset.i];rt()}};
+$("ans").oninput=e=>{e.target.value=norm(e.target.value).replace(/[^a-z]/g,"");rt()};
+$("del").onclick=()=>{$("ans").value=$("ans").value.slice(0,-1);rt()};
+$("shuf").onclick=()=>{const r=rounds[queue[cur]];r.l=mode==="w"?scr(r.w):sh(r.l);rt()};
+$("skip").onclick=()=>{if(queue.length>1){cur=(cur+1)%queue.length;draw()}};
+$("ok").onclick=()=>{const r=rounds[queue[cur]],a=$("ans").value.trim().toLowerCase();if(!a)return;
+ if(mode==="w"){if(a.length!==r.w.length){msg(t("useAll",r.w.length),"ko");return}
+  if(key(a)!==key(r.w)){msg(t("noMatch"),"ko");return}
+  if(a!==r.w&&!dict.set.has(a)){msg(t("notDict"),"ko");return}
+  r.done=1;score+=r.w.length;ding();queue.splice(cur,1);if(cur>=queue.length)cur=0;draw();msg(t("good",r.w.length),"ok");return}
+ const c={};r.l.forEach(x=>c[x]=(c[x]||0)+1);for(const x of a){if(!c[x]){msg(t("badL"),"ko");return}c[x]--}
+ if(!dict.set.has(a)){msg(t("notDict"),"ko");return}
+ if(a.length>best.length){best=a;score=a.length}ding();$("ans").value="";$("score").textContent=score+" "+t("pts");rt();msg(t("good",a.length),"ok")};
+const key=w=>w.split("").sort().join("");
+function timeUp(){lock(true);msg(t("timeUp"),"ko");afterMusic(()=>results(t("timeUp"),mode==="w"?xW():xL()))}
+const xW=()=>rounds.map(r=>'<div class="res '+(r.done?"ok":"")+'"><span>'+r.l.join("").toUpperCase()+"</span><span>"+r.w.toUpperCase()+"</span></div>").join("");
+function bestWords(l,list){const c={};l.forEach(x=>c[x]=(c[x]||0)+1);let m=0,out=[];for(const w of list){if(w.length<m)continue;const k={...c};let ok=true;for(const ch of w){if(!k[ch]){ok=false;break}k[ch]--}if(ok){if(w.length>m){m=w.length;out=[w]}else if(out.length<5)out.push(w)}}return out}
+function xL(){const b=bestWords(rounds[0].l,dict.list),f=a=>a.map(w=>w.toUpperCase()).join(", ");
+ return'<p style="text-align:center">'+t("yourBest")+" <b>"+(best?best.toUpperCase():t("none"))+'</b></p><p style="text-align:center">'+t("bestOf")+" <b>"+(b.length?f(b):t("none"))+"</b> ("+(b[0]?b[0].length:0)+")</p>"}
+// mots de la fin
+function startW(){clearTimeout(tmo);clearTimeout(dtm);const P=dl==="fr"?F:W,pk={};[5,6,7,8].forEach(n=>pk[n]=sh(P[n]).slice(0,2));rounds=[];
+ [0,1].forEach(k=>[5,6,7,8].forEach(n=>{const w=pk[n][k];rounds.push({w,l:scr(w),done:0})}));
+ queue=rounds.map((_,i)=>i);cur=0;score=0;over=false;setStage();gameUI();runTimer(120,$("time"),timeUp);playM(A.theme);if(!dict.ok)msg(t("offline"),"ko")}
+// mot le plus long
+const WT={fr:{v:{a:8,e:15,i:7,o:5,u:6,y:1},c:{b:2,c:3,d:4,f:2,g:2,h:2,j:1,k:1,l:5,m:3,n:6,p:3,q:1,r:6,s:6,t:6,v:2,w:1,x:1,z:1}},en:{v:{a:8,e:12,i:7,o:7,u:3},c:{b:2,c:3,d:4,f:2,g:3,h:2,j:1,k:1,l:4,m:3,n:6,p:3,q:1,r:6,s:6,t:9,v:1,w:2,x:1,y:2,z:1}}};
+const wp=o=>{const a=Object.entries(o).flatMap(([k,n])=>Array(n).fill(k));return a[Math.floor(Math.random()*a.length)]};
+function startL(){clearTimeout(tmo);clearTimeout(dtm);stopM();clearInterval(timer);over=true;ld=[];nv=nc=0;rdS();setStage();show("drawP");if(!dict.ok)$("dmsg").textContent=t("offline");else $("dmsg").textContent=t("drawH")}
+function rdS(){$("slots").innerHTML=Array.from({length:10},(_,i)=>'<div class="tile" style="cursor:default'+(ld[i]?"":";opacity:.3")+'">'+(ld[i]?ld[i].toUpperCase():"?")+"</div>").join("");$("vow").disabled=nv>=8||ld.length>=10;$("con").disabled=nc>=8||ld.length>=10}
+function dr(ty){if(ld.length>=10)return;ld.push(wp(WT[dl][ty]));ty==="v"?nv++:nc++;rdS();if(ld.length===10){clearTimeout(dtm);dtm=setTimeout(beginL,900)}}
+$("vow").onclick=()=>dr("v");$("con").onclick=()=>dr("c");
+function beginL(){rounds=[{w:"",l:ld.slice(),done:0}];queue=[0];cur=0;score=0;best="";over=false;gameUI();runTimer(30,$("time"),timeUp);playM(A.lettres)}
+// le compte est bon
+const PL=[1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,25,50,75,100];
+let P,items,lines,sa,so,tgt,bv,cl,ctok=0,shown=0,rv=false,ctu=false;
+function genT(p){for(let k=0;k<3000;k++){const a=sh(p),n=3+Math.floor(Math.random()*4);let r=a[0];for(let i=1;i<Math.min(n,6);i++){const x=a[i],c=[r+x,r*x];if(r>x)c.push(r-x);if(x>r)c.push(x-r);if(r%x===0)c.push(r/x);if(x%r===0)c.push(x/r);r=c[Math.floor(Math.random()*c.length)]}if(r>100&&r<1000)return r}return 100+Math.floor(Math.random()*900)}
+const lockC=b=>["undo","rst","cdone"].forEach(id=>$(id).disabled=b);
+const setTg=(d,k)=>{$("tg").innerHTML=d.map((x,i)=>"<b"+(i===k?' class="rl"':"")+">"+x+"</b>").join("")};
+function startC(){mode="c";clearTimeout(tmo);clearTimeout(dtm);stopM();clearInterval(timer);over=true;const tok=++ctok;
+ P=sh(PL).slice(0,6);tgt=genT(P);items=P.map(v=>({v,u:0}));lines=[];sa=so=null;cl=true;bv=null;score=0;shown=0;rv=true;ctu=false;
+ setStage();show("cGame");$("ctime").textContent=fmt(45);$("ctime").classList.remove("low");msg("","","cmsg");lockC(true);setTg([0,0,0]);rdC();revealC(tok)}
+async function revealC(tok){
+ for(let i=0;i<6;i++){await wait(i?550:700);if(tok!==ctok)return;shown=i+1;rdC()}
+ await wait(800);if(tok!==ctok)return;
+ const d=String(tgt).split("").map(Number),c=[0,0,0];
+ for(let k=0;k<3;k++){const end=Date.now()+900;
+  while(Date.now()<end){if(tok!==ctok)return;c[k]=Math.floor(Math.random()*10);setTg(c,k);await wait(70)}
+  if(tok!==ctok)return;c[k]=d[k];setTg(c);await wait(300)}
+ await wait(500);if(tok!==ctok)return;
+ rv=false;beginC()}
+function beginC(){bv=P.reduce((a,b)=>Math.abs(b-tgt)<Math.abs(a-tgt)?b:a);cl=false;over=false;lockC(false);rdC();runTimer(45,$("ctime"),cTime);playM(A.chiffres)}
+function rdC(){
+ $("pl").innerHTML=items.slice(0,6).map((x,i)=>i<shown?'<button class="plate'+(i===shown-1&&rv?" pop":"")+(i===sa?" sel":"")+(x.u?" used":"")+'" data-i="'+i+'"'+(x.u?" disabled":"")+">"+x.v+"</button>":'<div class="plate ph">?</div>').join("");
+ $("ops").innerHTML=["+","−","×","÷"].map(o=>'<button class="btn'+(o===so?" sel":"")+'" data-o="'+o+'"'+(cl||sa===null?" disabled":"")+">"+o+"</button>").join("");
+ $("clog").innerHTML=lines.map(l=>'<div class="cl"><span class="ex">'+l.a+" "+l.o+" "+l.b+' =</span><button class="plate'+(l.i===sa?" sel":"")+(items[l.i].u?" used":"")+'" data-i="'+l.i+'"'+(items[l.i].u?" disabled":"")+">"+l.r+"</button></div>").join("")}
+function pickC(e){const b=e.target.closest("[data-i]");if(!b||cl||b.disabled)return;const i=+b.dataset.i;
+ if(sa===null)sa=i;else if(sa===i){sa=null;so=null}else if(so)return ap(sa,so,i);else sa=i;rdC()}
+$("pl").onclick=pickC;$("clog").onclick=pickC;
+$("ops").onclick=e=>{const b=e.target.closest("[data-o]");if(!b||cl||sa===null)return;so=so===b.dataset.o?null:b.dataset.o;rdC()};
+const cState=()=>bv===tgt?msg(t("exact"),"ok","cmsg"):msg("","","cmsg");
+function ap(a,o,b){const x=items[a].v,y=items[b].v;let r;if(o==="+")r=x+y;else if(o==="×")r=x*y;else if(o==="−")r=x-y;else r=y?x/y:0;
+ if(r<=0||!Number.isInteger(r)){msg(t("opBad"),"ko","cmsg");so=null;rdC();return}
+ items[a].u=items[b].u=1;items.push({v:r,u:0});lines.push({a:x,o,b:y,r,i:items.length-1,ia:a,ib:b});sa=so=null;
+ if(Math.abs(r-tgt)<Math.abs(bv-tgt))bv=r;cState();rdC()}
+$("undo").onclick=()=>{if(cl||!lines.length)return;const l=lines.pop();items.pop();items[l.ia].u=0;items[l.ib].u=0;sa=so=null;cState();rdC()};
+$("rst").onclick=()=>{if(cl)return;items=P.map(v=>({v,u:0}));lines=[];sa=so=null;cState();rdC()};
+$("cdone").onclick=()=>cEnd();
+function cTime(){cl=true;ctu=true;sa=so=null;rdC();msg(t("timeUp"),"ko","cmsg");afterMusic(cEnd)}
+function solve(n,T){let b=null,bd=1e9;const seen=new Set();
+ (function rec(a){if(bd===0)return;const k=a.map(x=>x.v).sort((x,y)=>x-y).join();if(seen.has(k))return;seen.add(k);
+  for(const x of a){const d=Math.abs(x.v-T);if(d<bd){bd=d;b=x}}
+  for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++){const x=a[i],y=a[j],rest=a.filter((_,m)=>m!==i&&m!==j),hi=x.v>=y.v?x:y,lo=hi===x?y:x,c=[[x.v+y.v,"+"],[x.v*y.v,"×"]];
+   if(hi.v>lo.v)c.push([hi.v-lo.v,"−"]);if(hi.v%lo.v===0)c.push([hi.v/lo.v,"÷"]);
+   for(const[v,o]of c){const f=(o==="−"||o==="÷")?hi:x,s=f===x?y:x;rec(rest.concat({v,s:"("+f.s+" "+o+" "+s.s+")"}))}}})(n.map(v=>({v,s:""+v})));
+ return{v:b.v,s:b.s.replace(/^\((.*)\)$/,"$1")}}
+function cEnd(){if(over)return;cl=true;const d=Math.abs(tgt-bv),s=solve(P,tgt);score=d===0?10:d<=5?7:d<=10?5:0;
+ results(d===0?t("exact"):ctu?t("timeUp"):t("ended"),'<p style="text-align:center">'+t("yourClosest")+" <b>"+bv+"</b> ("+tgt+')</p><p style="text-align:center">'+t("solution")+" <b>"+s.s+" = "+s.v+"</b></p>")}
+// fin de partie et records
+const RK="fwrec2";
+function allR(){let o=null;try{o=JSON.parse(localStorage.getItem(RK)||"null")}catch(e){}
+ if(!o){o={n:[],q:[],w:[]};try{o.w=JSON.parse(localStorage.getItem("fwrec")||"[]")}catch(e){}}return o}
+const loadR=c=>allR()[c]||[];
+function saveR(c,a){const o=allR();o[c]=a;try{localStorage.setItem(RK,JSON.stringify(o))}catch(e){}}
+function results(why,html){if(over)return;over=true;clearInterval(timer);pending=null;stopM();closeModal();show("end");
+ $("why").textContent=why;$("final").textContent=score+" "+t("pts");$("extra").innerHTML=html;
+ let last=true,cat=!party&&mode==="w"?"w":null,sc=score;
+ if(party){party.total+=score;last=party.i>=party.steps.length-1;$("ptot").textContent=(last?t("partyEnd")+" ":"")+t("total")+" : "+party.total+" "+t("pts");if(last){cat=party.type;sc=party.total}}
+ $("ptot").classList.toggle("hide",!party);$("next").classList.toggle("hide",!(party&&!last));$("again").classList.toggle("hide",!!(party&&!last));
+ rc=cat;rs=sc;const a=cat?loadR(cat):[];
+ $("saveBox").classList.toggle("hide",!(cat&&sc>0&&(a.length<10||sc>a[a.length-1].s)))}
+$("save").onclick=()=>{const a=loadR(rc);a.push({n:$("pseudo").value.trim()||"???",s:rs,d:new Date().toLocaleDateString("fr-FR")});a.sort((x,y)=>y.s-x.s);saveR(rc,a.slice(0,10));$("saveBox").classList.add("hide");$("why").textContent=t("saved")};
+function renderR(){const o=allR();let h="";[["n","pN"],["q","pQ"],["w","mW"]].forEach(([c,k])=>{const a=o[c]||[];if(a.length)h+="<h3>"+t(k)+"</h3>"+a.map((r,i)=>'<div class="res"><span>'+(i+1)+". "+r.n.replace(/</g,"&lt;")+"</span><span>"+r.s+" "+t("pts")+" · "+r.d+"</span></div>").join("")});
+ $("rlist").innerHTML=h||'<p style="text-align:center;color:var(--mut)">'+t("noScores")+"</p>"}
+applyLang();
+</script></body></html>
